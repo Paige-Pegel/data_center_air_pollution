@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Data Center Emissions Projection Model</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        color: white;
+        text-align: center;
+        padding: 30px;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: auto;
+        background: rgba(255,255,255,0.06);
+        backdrop-filter: blur(12px);
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    h2 {
+        margin-bottom: 5px;
+    }
+
+    p {
+        margin-top: 0;
+        color: #cbd5e1;
+        font-size: 14px;
+    }
+
+    input[type=range] {
+        width: 80%;
+        margin-top: 15px;
+    }
+
+    .year-label {
+        margin-top: 10px;
+        font-size: 18px;
+        color: #93c5fd;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Data Center Emissions Projection Model</h2>
+    <p>2024–2030 AI Expansion Scenario (Novva + QTS + T5 + Raeden)</p>
+
+    <input type="range" id="yearSlider" min="2024" max="2030" value="2024">
+    <div class="year-label">Year: <span id="yearDisplay">2024</span></div>
+
+    <canvas id="chart"></canvas>
+</div>
+
+<script>
+const ctx = document.getElementById('chart').getContext('2d');
+
+let year = 2024;
+
+// Base values (2024)
+const baseState = [7.1, 30, 0.6, 60];
+const baseCity  = [9.2, 42, 0.8, 68];
+
+// Data center growth sensitivity (AI expansion effect)
+function getDataCenterImpact(year) {
+    let growthFactor = 1 + ((year - 2024) * 0.08); // ~8% yearly AI expansion pressure
+
+    return [
+        11.5 * growthFactor, // PM2.5
+        58 * growthFactor,   // NOx
+        1.1 * growthFactor,  // CO
+        82 * growthFactor    // Ozone
+    ];
+}
+
+// Chart setup
+const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['PM2.5', 'NOx', 'CO', 'Ozone'],
+        datasets: [
+            {
+                label: 'Colorado State Average',
+                data: baseState,
+                backgroundColor: '#3b82f6',
+                borderRadius: 10
+            },
+            {
+                label: 'Colorado Springs Baseline',
+                data: baseCity,
+                backgroundColor: '#f43f5e',
+                borderRadius: 10
+            },
+            {
+                label: 'Data Center Impact Zone (AI + Expansion)',
+                data: getDataCenterImpact(2024),
+                backgroundColor: '#a855f7',
+                borderRadius: 10
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                labels: { color: 'white' }
+            },
+            title: {
+                display: true,
+                text: 'Projected Air Pollution Impact of Data Center Expansion',
+                color: 'white'
+            }
+        },
+        scales: {
+            x: {
+                ticks: { color: '#cbd5e1' },
+                grid: { display: false }
+            },
+            y: {
+                ticks: { color: '#cbd5e1' },
+                grid: { color: 'rgba(255,255,255,0.1)' },
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Slider logic
+const slider = document.getElementById("yearSlider");
+const yearDisplay = document.getElementById("yearDisplay");
+
+slider.addEventListener("input", function () {
+    year = parseInt(this.value);
+    yearDisplay.textContent = year;
+
+    chart.data.datasets[2].data = getDataCenterImpact(year);
+    chart.update();
+});
+</script>
+
+</body>
+</html>
